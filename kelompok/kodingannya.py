@@ -6,6 +6,7 @@ import networkx as nx
 class KebutuhanSehariHari:
     # init untuk membuat graph kosong
     def __init__(self):
+        
         self.graph = nx.Graph()
 
     # method untuk menambahkan kebutuhan ke dalam graph

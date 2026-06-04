@@ -1,4 +1,3 @@
-# INI KODINGAN SAYA TAOHID
 import io
 from gtts import gTTS
 import streamlit as st
@@ -7,9 +6,21 @@ import matplotlib.pyplot as plt
 import calendar
 from datetime import datetime
 from kodingannya import KebutuhanSehariHari
+
 # Set halaman Streamlit
 st.set_page_config(page_title="Visualisasi Kebutuhan Graf", layout="wide")
 st.title("📊 Visualisasi Alokasi Dana Bulanan Berbasis Graf")
+
+st.markdown(
+    """
+    **Penjelasan Fitur**
+    - **Tambah Kebutuhan:** Masukkan nama kebutuhan, tanggal, dan nominal untuk menambah alokasi ke graf.
+    - **Visualisasi Graf:** Menampilkan hubungan total dana -> tanggal -> kebutuhan beserta bobot nominal.
+    - **Tabel Detail:** Menunjukkan daftar relasi dan jumlah alokasi untuk pengecekan cepat.
+    - **Audio Status:** Mengeluarkan rekaman suara sisa dana setelah data ditambahkan.
+    - **Hapus Kebutuhan:** Menghapus kebutuhan yang tidak dibutuhkan lagi beserta relasinya dari graf.
+    """
+)
 
 # 1. Inisialisasi Class ke dalam Session State agar data tidak hilang saat refresh
 if 'manajer_kebutuhan' not in st.session_state:
@@ -42,8 +53,12 @@ st.sidebar.info(f"📅 Jumlah hari pada bulan ini: {jumlah_hari} hari")
 # --- HITUNG SISA DANA ---
 total_terpakai = 0
 for u, v, data in manajer.get_kebutuhan_dengan_bobot():
-    if "(Tgl " in v:  # Filter agar tidak dobel hitung nominalnya
-        total_terpakai += data['weight']
+    # Hitung hanya untuk edge yang berhubungan dengan node kebutuhan
+    # (node kebutuhan mengandung substring "(Tgl ") sehingga kita
+    # memeriksa kedua ujung edge untuk menghindari ketergantungan
+    # pada urutan (u, v) yang tidak deterministik.
+    if "(Tgl " in str(u) or "(Tgl " in str(v):
+        total_terpakai += data.get('weight', 0)
 
 sisa_dana = total_dana - total_terpakai
 
@@ -69,9 +84,16 @@ with st.form("form_kebutuhan"):
 
 # Proses ketika tombol form ditekan
 if submit_button and kategori_kebutuhan:
-    node_pusat = f"Dana: Rp {total_dana:,}"
+    node_pusat = "Dana Bulanan"
     node_tanggal = f"Tgl {tanggal_pilihan}"
-    node_kebutuhan = f"{kategori_kebutuhan} (Tgl {tanggal_pilihan})" 
+    node_kebutuhan_base = f"{kategori_kebutuhan} (Tgl {tanggal_pilihan})"
+    node_kebutuhan = node_kebutuhan_base
+    counter = 1
+
+    # Jika kebutuhan sama sudah ada, buat label baru agar setiap input tetap ditambahkan.
+    while node_kebutuhan in manajer.get_all_kebutuhan():
+        counter += 1
+        node_kebutuhan = f"{kategori_kebutuhan} ({counter}) (Tgl {tanggal_pilihan})"
     
     # Tambah node ke graf via class
     manajer.tambah_kebutuhan(node_pusat)
@@ -83,11 +105,32 @@ if submit_button and kategori_kebutuhan:
     manajer.add_hubungan(node_tanggal, node_kebutuhan, bobot=dana_dialokasikan)
     
     st.success(f"Berhasil menambahkan {kategori_kebutuhan} sebesar Rp {dana_dialokasikan:,} pada Tanggal {tanggal_pilihan}")
-    # Simpan status bahwa data baru saja dimasukkan untuk trigger suara di bawah
-    st.session_state.pemicu_suara = True
+    # Tidak lagi memicu audio otomatis; audio hanya diputar lewat tombol manual
 
-# INI PUNYA SI DAPIT ANJAII
-# 3. Visualisasi Graf menggunakan Matplotlib
+
+# 3. Hapus Kebutuhan
+st.subheader("🗑️ Hapus Kebutuhan")
+st.caption("Hapus item kebutuhan yang sudah tidak dibutuhkan lagi. Node tersebut akan dihapus dari graf beserta semua relasinya.")
+
+kebutuhan_opsi = sorted([node for node in manajer.get_all_kebutuhan() if "(Tgl " in node])
+if kebutuhan_opsi:
+    pilihan_hapus_kebutuhan = st.selectbox("Pilih Kebutuhan untuk Dihapus", kebutuhan_opsi)
+    if st.button("Hapus Kebutuhan"):
+        if manajer.hapus_kebutuhan(pilihan_hapus_kebutuhan):
+            st.success(f"Berhasil menghapus {pilihan_hapus_kebutuhan} dari alokasi dana.")
+            # Gunakan experimental_rerun jika tersedia; jika tidak, hentikan eksekusi
+            # agar Streamlit merender ulang di interaksi selanjutnya.
+            if hasattr(st, "experimental_rerun"):
+                st.experimental_rerun()
+            else:
+                st.stop()
+        else:
+            st.warning("Kebutuhan tidak ditemukan atau sudah dihapus.")
+else:
+    st.info("Belum ada kebutuhan yang bisa dihapus. Tambahkan kebutuhan terlebih dahulu.")
+
+
+# 4. Visualisasi Graf menggunakan Matplotlib
 st.subheader("🌐 Network Graph Kebutuhan")
 
 G = manajer.get_kebutuhan()
@@ -110,7 +153,7 @@ else:
     st.info("Belum ada data yang dimasukkan. Silakan isi form di atas untuk membentuk graf.")
 
 
-# 4. Tabel Detail Data & Audio Output di Paling Bawah
+# 5. Tabel Detail Data & Audio Output di Paling Bawah
 if len(G.nodes()) > 0:
     st.subheader("📋 Daftar Hubungan & Bobot")
     data_tabel = []
@@ -131,14 +174,4 @@ if len(G.nodes()) > 0:
         fp.seek(0)
         st.audio(fp, format="audio/mp3", autoplay=True)
         
-    # Trigger otomatis hanya jika baru saja menekan tombol 'Tambah ke Graf'
-    elif st.session_state.get('pemicu_suara', False):
-        teks_suara = f"Data berhasil diperbarui. Sisa dana bulanan anda saat ini adalah {sisa_dana} rupiah."
-        fp = io.BytesIO()
-        tts = gTTS(teks_suara, lang='id')
-        tts.write_to_fp(fp)
-        fp.seek(0)
-        st.audio(fp, format="audio/mp3", autoplay=True)
-        
-        # Matikan pemicu setelah audio dimainkan agar tidak autoplay terus menerus saat berinteraksi dengan widget lain
-        st.session_state.pemicu_suara = False
+    # Audio hanya diputar bila pengguna menekan tombol di atas.
