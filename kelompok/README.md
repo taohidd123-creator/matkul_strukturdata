@@ -1,5 +1,4 @@
-📊 Visualisasi Alokasi Dana Bulanan Berbasis Graf
-Aplikasi berbasis web menggunakan Streamlit dan NetworkX untuk membantu pengguna mengelola serta memvisualisasikan alokasi dana bulanan dalam bentuk struktur graf (jaringan). Aplikasi ini juga dilengkapi dengan fitur Text-to-Speech (TTS) untuk memberikan ringkasan saldo secara audio.
+📊 Visualisasi Alokasi Dana Bulanan Berbasis Graf Aplikasi berbasis web menggunakan Streamlit dan NetworkX untuk membantu pengguna mengelola serta memvisualisasikan alokasi dana bulanan dalam bentuk struktur graf (jaringan). Aplikasi ini juga dilengkapi dengan fitur Text-to-Speech (TTS) untuk memberikan ringkasan saldo secara audio.
 
 🚀 Fitur Utama
 1. Manajemen Dana Dinamis: Input total dana bulanan dan lacak sisa saldo secara real-time.
@@ -17,21 +16,24 @@ Aplikasi berbasis web menggunakan Streamlit dan NetworkX untuk membantu pengguna
 6. Calendar & Datetime: Pengolahan logika penanggalan.
 
 📂 Struktur File
-1. frontend.py: File utama Streamlit yang menangani antarmuka pengguna (UI) dan logika interaksi.
-2. kodingannya.py: Backend berupa class KebutuhanSehariHari yang mengelola struktur data graf menggunakan NetworkX.
+frontend.py: File utama Streamlit yang menangani antarmuka pengguna (UI) dan logika interaksi.
+kodingannya.py: Backend berupa class KebutuhanSehariHari yang mengelola struktur data graf menggunakan NetworkX.
 
-⚙️ Cara Menjalankan
-1. Instalasi Library Pastikan Anda sudah menginstal library yang diperlukan melalui terminal/command prompt: pip install streamlit networkx matplotlib gTTS
-2. Menjalankan Aplikasi Jalankan perintah berikut di folder tempat file berada: streamlit run frontend.py
+⚙️ Cara Inisiasi dan Menjalankan
+1. Clone Repositori​Buka terminal atau command prompt, lalu jalankan perintah berikut untuk mengkloning proyek ini ke komputer Anda: git clone https://github.com/username/nama-repositori.git cd nama-repositori
+2. Instalasi Library​Pastikan Python sudah terinstal, lalu pasang semua dependencies yang diperlukan dengan menjalankan perintah: pip install streamlit networkx matplotlib gTTS
+3. Menjalankan Aplikasi​Jalankan server Streamlit dengan perintah berikut di dalam folder proyek: streamlit run frontend.py Setelah perintah dijalankan, aplikasi akan otomatis terbuka di browser default Anda (biasanya di alamat http://localhost:8501).
 
-📖 Cara Penggunaan
-1. Masukkan Total Dana Bulanan pada sidebar.
-2. Pilih Tahun dan Bulan untuk menyesuaikan jumlah hari.
-3. Di panel utama, masukkan Tanggal, Nama Kebutuhan, dan Nominal Dana.
-4. Klik "Tambah ke Graf".
-5. Graf akan terbentuk secara otomatis yang menghubungkan:
-6. Pusat Dana ➔ Tanggal ➔ Kebutuhan.
-7. Dengarkan status saldo melalui fitur audio di bagian bawah halaman.
+​📖 Panduan Penggunaan Aplikasi​Setelah aplikasi terbuka di browser, Anda dapat mengikuti langkah-langkah berikut:
+1. Pengaturan Awal (Sidebar)
+​2. Masukkan Total Dana Bulanan yang Anda miliki pada kolom input di sidebar sebelah kiri.​- Pilih Tahun dan Bulan anggaran. Sistem akan otomatis menyesuaikan batas maksimum hari pada bulan tersebut.
+3. Input Data Alokasi Dana (Panel Utama)​- Tentukan Tanggal transaksi/alokasi.
+​4. Isi Nama Kebutuhan (misal: Makanan, Listrik, Kost).​- Masukkan Nominal Dana yang dialokasikan untuk kebutuhan tersebut.
+​5. Klik tombol "Tambah ke Graf".
+6. Membaca Hasil Visualisasi
+7. Graf Jaringan: Perhatikan visualisasi graf yang terbentuk secara otomatis. Struktur hubungan akan mengalir dari: Pusat Dana (Total) ➔ Tanggal Transaksi ➔ Nama Kebutuhan
+​8. Tabel Rincian: Lihat tabel di bagian bawah untuk melihat detail hubungan antar node beserta nominal pastinya dalam bentuk tabular.
+9. Fitur Audio (TTS)
+​10. Setiap kali Anda berhasil menambahkan data, sisa saldo akan dihitung ulang.​- Dengarkan pembaruan status sisa saldo Anda secara langsung melalui pemutar audio gTTS yang muncul di bagian bawah halaman.
 
-📝 Catatan Pengembangan
-Proyek ini memisahkan logika bisnis (Backend) dan tampilan (Frontend) untuk memastikan kode tetap rapi dan mudah dikembangkan di kemudian hari (seperti menambahkan fitur hapus node atau penyimpanan database).
+📝 Catatan Pengembangan Proyek ini memisahkan logika bisnis (Backend) dan tampilan (Frontend) untuk memastikan kode tetap rapi dan mudah dikembangkan di kemudian hari (seperti menambahkan fitur hapus node atau penyimpanan database).
